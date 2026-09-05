@@ -6,8 +6,8 @@ import type { FeedClip } from "@/lib/feed";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 
 import { AboutSheet } from "./about-sheet";
+import { FeedControls } from "./feed-controls";
 import { IPhoneFrame } from "./iphone-frame";
-import { ScrollHint } from "./scroll-hint";
 import { ShortsFeed, type ShortsFeedControls } from "./shorts-feed";
 
 const PAGE_KEYS = new Set([
@@ -19,7 +19,7 @@ const PAGE_KEYS = new Set([
   "Spacebar",
 ]);
 
-const WHEEL_THRESHOLD = 40;
+const WHEEL_THRESHOLD = 30;
 const WHEEL_COOLDOWN_MS = 520;
 
 function isEditableTarget(target: EventTarget | null) {
@@ -29,12 +29,24 @@ function isEditableTarget(target: EventTarget | null) {
   );
 }
 
+function normalizeWheelDelta(event: WheelEvent) {
+  // Firefox mouse wheels often report line deltas (~3 per notch).
+  if (event.deltaMode === 1) {
+    return event.deltaY * 16;
+  }
+  if (event.deltaMode === 2) {
+    return event.deltaY * window.innerHeight;
+  }
+  return event.deltaY;
+}
+
 export function ShortsShell({ clips }: {
   clips: readonly FeedClip[];
 }) {
   const isDesktop = useIsDesktop();
   const enableAbout = !isDesktop;
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [flashTick, setFlashTick] = useState(0);
   const feedRef = useRef<ShortsFeedControls>(null);
   const openAbout = useCallback(() => {
     setAboutOpen(true);
@@ -44,6 +56,9 @@ export function ShortsShell({ clips }: {
   }, []);
   const pageFeed = useCallback((direction: -1 | 1) => {
     feedRef.current?.page(direction);
+  }, []);
+  const handleAutoAdvance = useCallback(() => {
+    setFlashTick((tick) => tick + 1);
   }, []);
 
   useEffect(() => {
@@ -62,10 +77,11 @@ export function ShortsShell({ clips }: {
       event.preventDefault();
       const now = Date.now();
       if (now < lockedUntil) {
+        accumulated = 0;
         return;
       }
 
-      accumulated += event.deltaY;
+      accumulated += normalizeWheelDelta(event);
       if (Math.abs(accumulated) < WHEEL_THRESHOLD) {
         return;
       }
@@ -122,7 +138,6 @@ export function ShortsShell({ clips }: {
   return (
     <div className="shorts-device">
       <div className="shorts-device-stack">
-        <ScrollHint onPage={pageFeed} />
         <IPhoneFrame>
           <div
             className="shorts-feed-host"
@@ -135,9 +150,11 @@ export function ShortsShell({ clips }: {
               onAbout={openAbout}
               aboutOpen={aboutOpen}
               enableAbout={enableAbout}
+              onAutoAdvance={handleAutoAdvance}
             />
           </div>
         </IPhoneFrame>
+        <FeedControls onPage={pageFeed} flashTick={flashTick} />
       </div>
       <AboutSheet open={aboutOpen} onClose={closeAbout} />
     </div>

@@ -73,6 +73,7 @@ type ShortsFeedProps = {
   onAbout: () => void;
   aboutOpen?: boolean;
   enableAbout?: boolean;
+  onAutoAdvance?: () => void;
 };
 
 function ShortsFeedComponent(
@@ -81,6 +82,7 @@ function ShortsFeedComponent(
     onAbout,
     aboutOpen = false,
     enableAbout = true,
+    onAutoAdvance,
   }: ShortsFeedProps,
   ref: ForwardedRef<ShortsFeedControls>,
 ) {
@@ -427,10 +429,12 @@ function ShortsFeedComponent(
   );
 
   const handleVideoEnded = useCallback(() => {
-    if (!aboutOpen) {
-      scrollToIndex(activeIndex + 1);
+    if (aboutOpen) {
+      return;
     }
-  }, [aboutOpen, activeIndex, scrollToIndex]);
+    onAutoAdvance?.();
+    scrollToIndex(activeIndex + 1);
+  }, [aboutOpen, activeIndex, onAutoAdvance, scrollToIndex]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     switch (event.key) {

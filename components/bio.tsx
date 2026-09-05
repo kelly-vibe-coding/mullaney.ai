@@ -1,16 +1,16 @@
 import Link from "next/link";
 
 const ABOUT_FACTS = [
-  "These days I run Internal Applied AI at Juniper Square",
-  "Before that I was SVP of Education at Envestnet for a long stretch",
+  "I run Internal Applied AI at Juniper Square",
+  "Before that I was SVP of Customer Education at Envestnet",
   "Started in tax, then moved into investing",
   "I build most things in Cursor now, including this site",
   "At work we’re a Claude shop",
-  "I teach people to use AI and manage the engineers building our internal tools",
-  "Humbled former amateur boxer",
+  "Not a true software engineer. I manage the ones who are",
+  "Former amateur boxer. Not a good one",
   "Into home improvement projects",
   "Trying to live up to my three-year-old’s expectations",
-  "I hope scrolling the phone doesn’t give you whiplash",
+  "When I stop doing all that, I doomscroll AI hot takes",
 ] as const;
 
 function renderFact(fact: string, index: number) {

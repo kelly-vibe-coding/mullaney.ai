@@ -173,8 +173,27 @@
     height: auto;
   }
 
-  .phone-scroll-hint {
+  /* Feed + paging buttons sit side by side. */
+  .shorts-device-stack {
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(16px, 2vw, 28px);
+  }
+
+  /* Keep width:100% on the viewport (IPhoneFrame measures its clientWidth for
+     fitWidth; measuring the scaled child would loop). Let flex shrink it. */
+  .shorts-device-stack .iphone-viewport {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .feed-controls {
     display: flex;
+    flex: none;
+  }
+
+  .feed-scroll-cue {
+    display: none;
   }
 
   .about-sheet {

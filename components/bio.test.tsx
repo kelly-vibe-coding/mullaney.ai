@@ -23,10 +23,20 @@ describe("Bio", () => {
       screen.getByText(
         (_, element) =>
           element?.textContent ===
-          "These days I run Internal Applied AI at Juniper Square",
+          "I run Internal Applied AI at Juniper Square",
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText("Humbled former amateur boxer")).toBeInTheDocument();
+    expect(
+      screen.getByText("Former amateur boxer. Not a good one"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Not a true software engineer. I manage the ones who are",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("When I stop doing all that, I doomscroll AI hot takes"),
+    ).toBeInTheDocument();
 
     expect(screen.getByText("Some things about me:")).toBeInTheDocument();
     expect(screen.getByText("Some things I’ve put out:")).toBeInTheDocument();

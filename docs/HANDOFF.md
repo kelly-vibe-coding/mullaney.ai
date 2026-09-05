@@ -32,7 +32,7 @@ Production deploys are manual: `npx vercel deploy --prod`. Push Git separately.
 | `components/shorts-feed.tsx` | Snap feed, looping, mute state, voting, auto-advance |
 | `components/youtube-embed.tsx` | YouTube IFrame API and player controls |
 | `components/shorts-chrome.tsx` | In-phone controls and reaction rail |
-| `components/scroll-hint.tsx` | Orange desktop scroll hint above the phone |
+| `components/feed-controls.tsx` | Desktop up/down paging buttons beside the phone |
 | `components/iphone-frame.tsx` | Desktop phone frame and responsive scale |
 | `components/about-sheet.tsx` | Mobile About sheet |
 | `components/bio.tsx` | Shared bio copy and links |
@@ -47,10 +47,8 @@ Production deploys are manual: `npx vercel deploy --prod`. Push Git separately.
 
 ## UX behaviors to preserve
 
-- The desktop scroll hint sits above the phone and keeps its orange accent.
-- The hint root is a `div`. Buttons inside a `p` cause a hydration error.
-- The arrow buttons stay clickable after the text nudge disappears.
-- The in-phone “Scroll the feed” cue disappears after the first advance.
+- Desktop paging uses large up/down buttons beside the phone (wheel and arrow keys still work).
+- The in-phone “Scroll the feed” cue is mobile-only and disappears after the first advance.
 - Playback starts muted. Mute state persists while moving through the feed.
 - A video ending advances to the next Short unless About is open.
 - Mobile About opens from the Me tab and fills the screen. Desktop shows the bio beside the phone.
@@ -69,7 +67,7 @@ npm run typecheck
 npm run build
 ```
 
-Smoke-test desktop wheel and arrow paging, the scroll hint, mute, auto-advance, and the side bio. Smoke-test the mobile full-bleed feed and About sheet on a real iPhone when touch behavior changes.
+Smoke-test desktop wheel, arrow keys, and the up/down buttons beside the phone, mute, auto-advance, and the side bio. Smoke-test the mobile full-bleed feed and About sheet on a real iPhone when touch behavior changes.
 
 ## Ship checklist
 

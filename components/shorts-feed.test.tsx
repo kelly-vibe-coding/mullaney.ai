@@ -433,5 +433,4 @@ describe("ShortsFeed", () => {
     });
     expect(nextSlide.scrollIntoView).not.toHaveBeenCalled();
   });
-
 });
