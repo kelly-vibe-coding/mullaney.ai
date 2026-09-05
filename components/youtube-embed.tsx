@@ -225,6 +225,8 @@ export function YouTubeEmbed({
             controls: 0,
             fs: 0,
             enablejsapi: 1,
+            origin:
+              typeof window !== "undefined" ? window.location.origin : "",
           },
           events: {
             onReady: (event) => {
@@ -281,7 +283,7 @@ export function YouTubeEmbed({
                 iframe.title = title;
                 iframe.setAttribute(
                   "allow",
-                  "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+                  "autoplay; encrypted-media",
                 );
               }
             },

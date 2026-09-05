@@ -29,7 +29,3 @@ export function countsKey(clipId: string): string {
 export function votersKey(clipId: string): string {
   return `short:${clipId}:voters`;
 }
-
-export function rateLimitKey(voterId: string, windowStart: number): string {
-  return `rate:${voterId}:${windowStart}`;
-}

@@ -1,15 +1,46 @@
 import {
-  RATE_LIMIT_MAX,
-  RATE_LIMIT_WINDOW_SECONDS,
   type ClipVoteCounts,
   type Reaction,
 } from "@/lib/votes/constants";
 import {
   countsKey,
   getRedis,
-  rateLimitKey,
   votersKey,
 } from "@/lib/votes/redis";
+
+const SET_REACTION_SCRIPT = `
+local countsKey = KEYS[1]
+local votersKey = KEYS[2]
+local voterId = ARGV[1]
+local next = ARGV[2]
+local prior = redis.call('HGET', votersKey, voterId)
+local likes = math.max(0, tonumber(redis.call('HGET', countsKey, 'like') or 0))
+local dislikes = math.max(0, tonumber(redis.call('HGET', countsKey, 'dislike') or 0))
+
+if (prior or '') ~= next then
+  if prior == 'like' then
+    likes = math.max(0, likes - 1)
+  elseif prior == 'dislike' then
+    dislikes = math.max(0, dislikes - 1)
+  end
+
+  if next == 'like' then
+    likes = likes + 1
+  elseif next == 'dislike' then
+    dislikes = dislikes + 1
+  end
+
+  redis.call('HSET', countsKey, 'like', likes, 'dislike', dislikes)
+
+  if next == '' then
+    redis.call('HDEL', votersKey, voterId)
+  else
+    redis.call('HSET', votersKey, voterId, next)
+  end
+end
+
+return { likes, dislikes }
+`;
 
 function parseCount(value: unknown): number {
   const parsed = Number(value ?? 0);
@@ -24,11 +55,6 @@ function parseReaction(value: unknown): Reaction {
     return value;
   }
   return null;
-}
-
-export function getRateLimitWindowStart(nowMs = Date.now()): number {
-  const windowMs = RATE_LIMIT_WINDOW_SECONDS * 1000;
-  return Math.floor(nowMs / windowMs) * RATE_LIMIT_WINDOW_SECONDS;
 }
 
 export function computeReactionDelta(
@@ -89,46 +115,6 @@ export async function getClipVotes(
   return result;
 }
 
-export async function getRateLimitCount(
-  voterId: string,
-  nowMs = Date.now(),
-): Promise<number> {
-  const redis = getRedis();
-  if (!redis) {
-    return RATE_LIMIT_MAX + 1;
-  }
-
-  const key = rateLimitKey(voterId, getRateLimitWindowStart(nowMs));
-  const count = await redis.get<number>(key);
-  return Number(count ?? 0);
-}
-
-export async function recordSuccessfulPut(
-  voterId: string,
-  nowMs = Date.now(),
-): Promise<void> {
-  const redis = getRedis();
-  if (!redis) {
-    return;
-  }
-
-  const windowStart = getRateLimitWindowStart(nowMs);
-  const key = rateLimitKey(voterId, windowStart);
-  const count = await redis.incr(key);
-
-  if (count === 1) {
-    await redis.expire(key, RATE_LIMIT_WINDOW_SECONDS);
-  }
-}
-
-export async function checkRateLimit(
-  voterId: string,
-  nowMs = Date.now(),
-): Promise<{ allowed: boolean; count: number }> {
-  const count = await getRateLimitCount(voterId, nowMs);
-  return { allowed: count < RATE_LIMIT_MAX, count };
-}
-
 export async function setReaction(
   clipId: string,
   voterId: string,
@@ -139,43 +125,16 @@ export async function setReaction(
     throw new Error("Redis is not configured");
   }
 
-  const priorRaw = await redis.hget(votersKey(clipId), voterId);
-  const prior = parseReaction(priorRaw);
-
-  if (prior === reaction) {
-    const counts = await redis.hgetall(countsKey(clipId));
-    return {
-      clipId,
-      like: parseCount(counts?.like),
-      dislike: parseCount(counts?.dislike),
-      reaction,
-    };
-  }
-
-  const delta = computeReactionDelta(prior, reaction);
-  const pipeline = redis.pipeline();
-
-  if (delta.like !== 0) {
-    pipeline.hincrby(countsKey(clipId), "like", delta.like);
-  }
-  if (delta.dislike !== 0) {
-    pipeline.hincrby(countsKey(clipId), "dislike", delta.dislike);
-  }
-
-  if (reaction === null) {
-    pipeline.hdel(votersKey(clipId), voterId);
-  } else {
-    pipeline.hset(votersKey(clipId), { [voterId]: reaction });
-  }
-
-  await pipeline.exec();
-
-  const counts = await redis.hgetall(countsKey(clipId));
+  const counts = (await redis.eval(
+    SET_REACTION_SCRIPT,
+    [countsKey(clipId), votersKey(clipId)],
+    [voterId, reaction ?? ""],
+  )) as [unknown, unknown];
 
   return {
     clipId,
-    like: Math.max(0, parseCount(counts?.like)),
-    dislike: Math.max(0, parseCount(counts?.dislike)),
+    like: parseCount(counts[0]),
+    dislike: parseCount(counts[1]),
     reaction,
   };
 }

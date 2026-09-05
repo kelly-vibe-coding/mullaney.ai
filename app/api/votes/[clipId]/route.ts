@@ -3,10 +3,21 @@ import { NextResponse } from "next/server";
 import { isValidClipId } from "@/lib/votes/clip-ids";
 import type { Reaction } from "@/lib/votes/constants";
 import { ensureVoterId } from "@/lib/votes/cookie";
-import { checkRateLimit, recordSuccessfulPut, setReaction } from "@/lib/votes/reactions";
+import {
+  checkVoteRateLimits,
+  getClientIp,
+} from "@/lib/votes/rate-limit";
+import { setReaction } from "@/lib/votes/reactions";
 import { getRedis } from "@/lib/votes/redis";
 
 export const runtime = "nodejs";
+
+function voteJson(body: unknown, status = 200) {
+  return NextResponse.json(body, {
+    status,
+    headers: { "Cache-Control": "no-store" },
+  });
+}
 
 function parseReaction(value: unknown): Reaction | undefined {
   if (value === null) {
@@ -24,46 +35,40 @@ export async function PUT(
 ) {
   const redis = getRedis();
   if (!redis) {
-    return NextResponse.json(
-      { error: "Vote storage is not configured" },
-      { status: 503 },
-    );
+    return voteJson({ error: "Vote storage is not configured" }, 503);
   }
 
   const { clipId } = await context.params;
 
   if (!isValidClipId(clipId)) {
-    return NextResponse.json({ error: "Unknown clip id" }, { status: 404 });
+    return voteJson({ error: "Unknown clip id" }, 404);
   }
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return voteJson({ error: "Invalid JSON body" }, 400);
   }
 
   if (!body || typeof body !== "object" || !("reaction" in body)) {
-    return NextResponse.json({ error: "Missing reaction field" }, { status: 400 });
+    return voteJson({ error: "Missing reaction field" }, 400);
   }
 
   const reaction = parseReaction((body as { reaction: unknown }).reaction);
   if (reaction === undefined) {
-    return NextResponse.json({ error: "Invalid reaction value" }, { status: 400 });
+    return voteJson({ error: "Invalid reaction value" }, 400);
   }
 
   const voterId = await ensureVoterId();
-  const rate = await checkRateLimit(voterId);
-
-  if (!rate.allowed) {
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!(await checkVoteRateLimits(voterId, getClientIp(request)))) {
+    return voteJson({ error: "Rate limit exceeded" }, 429);
   }
 
   try {
     const result = await setReaction(clipId, voterId, reaction);
-    await recordSuccessfulPut(voterId);
-    return NextResponse.json(result);
+    return voteJson(result);
   } catch {
-    return NextResponse.json({ error: "Vote failed" }, { status: 500 });
+    return voteJson({ error: "Vote failed" }, 500);
   }
 }

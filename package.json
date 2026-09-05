@@ -11,6 +11,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.4",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.40.0",

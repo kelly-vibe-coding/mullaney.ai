@@ -3,11 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { FEED_CLIPS } from "@/lib/feed";
 import { VALID_CLIP_IDS } from "@/lib/votes/clip-ids";
 import {
-  checkRateLimit,
   computeReactionDelta,
   getClipVotes,
-  getRateLimitWindowStart,
-  recordSuccessfulPut,
   setReaction,
 } from "@/lib/votes/reactions";
 import * as redisModule from "@/lib/votes/redis";
@@ -33,12 +30,6 @@ describe("computeReactionDelta", () => {
       like: 0,
       dislike: 0,
     });
-  });
-});
-
-describe("getRateLimitWindowStart", () => {
-  it("buckets timestamps into 10-minute windows", () => {
-    expect(getRateLimitWindowStart(1_700_000_000_000)).toBe(1_699_999_800);
   });
 });
 
@@ -109,20 +100,10 @@ describe("setReaction", () => {
   });
 
   it("applies a like from neutral and returns updated counts", async () => {
-    const exec = vi.fn().mockResolvedValue([]);
-    const pipeline = vi.fn().mockReturnValue({
-      hincrby: vi.fn().mockReturnThis(),
-      hset: vi.fn().mockReturnThis(),
-      hdel: vi.fn().mockReturnThis(),
-      exec,
-    });
-    const hget = vi.fn().mockResolvedValue(null);
-    const hgetall = vi.fn().mockResolvedValue({ like: "1", dislike: "0" });
+    const evalScript = vi.fn().mockResolvedValue([1, 0]);
 
     vi.spyOn(redisModule, "getRedis").mockReturnValue({
-      hget,
-      hgetall,
-      pipeline,
+      eval: evalScript,
     } as never);
 
     const result = await setReaction("ai-and-jobs-lead-fdSE53Va9NU", "voter-1", "like");
@@ -133,56 +114,31 @@ describe("setReaction", () => {
       dislike: 0,
       reaction: "like",
     });
-    expect(pipeline).toHaveBeenCalled();
-  });
-});
-
-describe("checkRateLimit", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("blocks when redis is unavailable", async () => {
-    vi.spyOn(redisModule, "getRedis").mockReturnValue(null);
-
-    await expect(checkRateLimit("voter-1")).resolves.toEqual({
-      allowed: false,
-      count: 61,
-    });
+    expect(evalScript).toHaveBeenCalledOnce();
+    expect(evalScript).toHaveBeenCalledWith(
+      expect.stringContaining("redis.call('HGET', votersKey, voterId)"),
+      [
+        "short:ai-and-jobs-lead-fdSE53Va9NU:counts",
+        "short:ai-and-jobs-lead-fdSE53Va9NU:voters",
+      ],
+      ["voter-1", "like"],
+    );
   });
 
-  it("allows requests under the configured limit", async () => {
-    const get = vi.fn().mockResolvedValue(12);
-
+  it("passes an empty sentinel when clearing a reaction", async () => {
+    const evalScript = vi.fn().mockResolvedValue(["2", "3"]);
     vi.spyOn(redisModule, "getRedis").mockReturnValue({
-      get,
+      eval: evalScript,
     } as never);
 
-    await expect(checkRateLimit("voter-1", 1_700_000_000_000)).resolves.toEqual({
-      allowed: true,
-      count: 12,
-    });
-    expect(get).toHaveBeenCalledWith("rate:voter-1:1699999800");
-  });
-});
+    await expect(
+      setReaction("ai-and-jobs-lead-fdSE53Va9NU", "voter-1", null),
+    ).resolves.toMatchObject({ like: 2, dislike: 3, reaction: null });
 
-describe("recordSuccessfulPut", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("increments the voter window counter", async () => {
-    const incr = vi.fn().mockResolvedValue(1);
-    const expire = vi.fn().mockResolvedValue(1);
-
-    vi.spyOn(redisModule, "getRedis").mockReturnValue({
-      incr,
-      expire,
-    } as never);
-
-    await recordSuccessfulPut("voter-1", 1_700_000_000_000);
-
-    expect(incr).toHaveBeenCalledWith("rate:voter-1:1699999800");
-    expect(expire).toHaveBeenCalledWith("rate:voter-1:1699999800", 600);
+    expect(evalScript).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(Array),
+      ["voter-1", ""],
+    );
   });
 });

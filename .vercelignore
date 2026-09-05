@@ -1,0 +1,14 @@
+.env*
+.superpowers/
+.agents/
+docs/superpowers/
+scripts/
+artifacts/
+mocks/
+app/feed-review/
+public/feed-review-data.json
+coverage/
+**/*.test.ts
+**/*.test.tsx
+vitest.*
+test/
