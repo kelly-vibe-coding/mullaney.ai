@@ -1,0 +1,159 @@
+.shorts-feed-host {
+  position: absolute;
+  inset: 0;
+}
+
+/* When About is open the feed is inert — also hidden so the playing Short
+   cannot bleed through / steal taps on real iOS Safari. */
+.shorts-feed-host[inert] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html[data-about-open] .shorts-device {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Portaled to document.body. Avoid transform-based show/hide: iOS Safari
+   desyncs visual layers from hit-targets on transformed position:fixed UI
+   (Chrome's device emulator does not reproduce this). */
+.about-sheet {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2147483000;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  height: 100dvh;
+  height: 100svh;
+  max-height: -webkit-fill-available;
+  margin: 0;
+  background: #0c0e12;
+  color: var(--site-text);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  --app-top-inset: max(12px, env(safe-area-inset-top, 0px));
+  --app-bottom-inset: max(12px, env(safe-area-inset-bottom, 0px));
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  -webkit-overflow-scrolling: touch;
+}
+
+.about-sheet[data-open] {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.about-sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 34% at 84% 4%, rgb(255 92 56 / 16%), transparent 66%),
+    radial-gradient(70% 40% at 6% 0%, rgb(96 140 168 / 14%), transparent 70%);
+}
+
+.about-sheet-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(var(--app-top-inset) + 8px) 12px 12px;
+  border-bottom: 1px solid rgb(255 255 255 / 7%);
+  /* Solid (not translucent blur) — iOS Safari hit-tests sticky/blur headers
+     more reliably when the bar is fully opaque. */
+  background: #0c0e12;
+}
+
+.about-sheet-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.about-sheet-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  min-width: 72px;
+  margin: 0;
+  padding: 0 14px 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 8%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 12%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 3;
+}
+
+.about-sheet-back svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.about-sheet-back:active {
+  background: rgb(255 255 255 / 14%);
+}
+
+.about-sheet-body {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  overflow-y: auto;
+  padding: 26px 22px 34px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.about-sheet-body::-webkit-scrollbar {
+  width: 0;
+}
+
+.about-you-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 24px;
+}
+
+.about-you-ring {
+  flex: none;
+}
+
+.about-you-name {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.about-you-handle {
+  margin-top: 3px;
+  font-size: 12.5px;
+  letter-spacing: 0.005em;
+  color: var(--site-muted-2);
+}
+
+.about-sheet .bio {
+  max-width: none;
+}

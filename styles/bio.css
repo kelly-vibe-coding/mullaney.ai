@@ -1,0 +1,89 @@
+.bio {
+  max-width: 35rem;
+}
+
+.bio-name {
+  /* Match Shorts chrome UI font, not a serif. */
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: clamp(24px, 2.4vw, 30px);
+  letter-spacing: -0.03em;
+  margin: 0 0 14px;
+  color: #fff;
+}
+
+.bio-line {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #c3c8d0;
+  margin: 0 0 clamp(28px, 4vh, 40px);
+  max-width: 28rem;
+}
+
+.bio-section-label {
+  font-size: 15px;
+  color: #e6e8ec;
+  margin: 0 0 10px;
+}
+
+.bio-list {
+  list-style: disc;
+  margin: 0 0 clamp(28px, 4vh, 40px);
+  padding: 0 0 0 1.4rem;
+  display: grid;
+  gap: 7px;
+}
+
+.bio-list li {
+  font-size: 15px;
+  line-height: 1.55;
+  color: #c3c8d0;
+}
+
+.bio-list li::marker {
+  color: #8b929c;
+}
+
+.bio-list a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgb(255 255 255 / 35%);
+}
+
+.bio-list a:hover {
+  text-decoration-color: #fff;
+}
+
+.bio[data-compact] .bio-line {
+  margin-bottom: 20px;
+}
+
+.bio[data-compact] .bio-list {
+  margin-bottom: 20px;
+  gap: 5px;
+}
+
+.bio[data-compact] .bio-name {
+  margin-bottom: 10px;
+}
+
+.me-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  background: #0c0e12;
+  box-shadow: 0 0 0 2px var(--site-accent);
+  overflow: hidden;
+}
+
+.me-avatar-photo {
+  display: block;
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  object-fit: cover;
+}

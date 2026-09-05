@@ -1,0 +1,39 @@
+{
+  "name": "mullaney.ai",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "vitest run",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.4",
+    "gray-matter": "^4.0.3",
+    "lucide-react": "^1.40.0",
+    "next": "^16.3.4",
+    "next-mdx-remote": "^6.0.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/node": "^26.4.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.4",
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.0"
+  },
+  "private": true
+}

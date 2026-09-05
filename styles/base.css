@@ -1,0 +1,121 @@
+:root {
+  color-scheme: dark;
+  --site-bg: #07080a;
+  --site-panel: #0c0e12;
+  --site-panel-raised: #11141a;
+  --site-text: #f2f3f5;
+  --site-muted: #9aa1ab;
+  --site-muted-2: #6b7280;
+  --site-line: rgb(255 255 255 / 9%);
+  --site-line-strong: rgb(255 255 255 / 16%);
+  --site-accent: #ff5c38;
+  --site-steel: #7fb0c9;
+  --yt-bg: #0f0f0f;
+  --yt-nav-inactive: #aaa;
+  --font-app: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --phone-scale: 1;
+  --app-top-inset: 0px;
+  --app-bottom-inset: 0px;
+  --app-nav-h: 49px;
+  /* Keeps site chrome clear of the embed's own bottom control bar. */
+  --app-player-guard: 40px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  background: var(--site-bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--site-bg);
+  color: var(--site-text);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgb(255 92 56 / 28%);
+}
+
+.site-atmosphere {
+  /* Stage stays max-width centered; paint the wash on the viewport. */
+  background: transparent;
+}
+
+.site-atmosphere::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(52% 46% at 12% 8%, rgb(96 140 168 / 20%), transparent 62%),
+    radial-gradient(44% 40% at 88% 84%, rgb(255 92 56 / 13%), transparent 64%),
+    linear-gradient(180deg, #0a0c10 0%, #07080a 46%, #050608 100%);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.not-found {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 24px;
+  background: var(--site-bg);
+  color: var(--site-text);
+  text-align: center;
+}
+
+.not-found-title {
+  margin: 0 0 12px;
+  font-size: 1.5rem;
+}
+
+.not-found-text {
+  margin: 0 0 20px;
+  color: var(--site-muted);
+}
+
+.not-found-links {
+  margin: 0;
+}

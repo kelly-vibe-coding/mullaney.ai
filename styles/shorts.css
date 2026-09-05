@@ -1,0 +1,507 @@
+.shorts-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Persistent YT player under the feed. iOS captures touch on iframes even with
+   pointer-events:none, so the player must sit BELOW the scroller. */
+.shorts-player-layer {
+  position: absolute;
+  inset: 0 0 var(--app-nav-h) 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.shorts-feed {
+  position: absolute;
+  inset: 0 0 var(--app-nav-h) 0;
+  z-index: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  background: transparent;
+}
+
+/* Mute above the feed (player stacking context can't escape above siblings). */
+.shorts-controls-layer {
+  position: absolute;
+  inset: 0 0 var(--app-nav-h) 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.shorts-controls-layer .shorts-mute-btn {
+  pointer-events: auto;
+}
+
+.shorts-feed::-webkit-scrollbar {
+  display: none;
+}
+
+.shorts-slide {
+  position: relative;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+  background-color: #0f0f0f;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Clear the thumbnail so the underlaid player shows; feed still owns touch. */
+.shorts-slide--playing {
+  background-color: transparent;
+  background-image: none;
+}
+
+.shorts-yt-frame,
+.shorts-yt-host {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+
+/* Parent owns vertical snap/swipe. YouTube must not steal mobile touch. */
+.shorts-yt-frame,
+.shorts-yt-frame iframe {
+  pointer-events: none;
+}
+
+.shorts-pause-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 48%);
+  color: #fff;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.shorts-pause-badge svg {
+  width: 34px;
+  height: 34px;
+  margin-left: 3px;
+}
+
+.shorts-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(122% 82% at 50% 40%, transparent 46%, rgb(0 0 0 / 46%) 100%),
+    linear-gradient(180deg, rgb(0 0 0 / 50%) 0%, transparent 20%, transparent 56%, rgb(0 0 0 / 72%) 100%);
+}
+
+/* ---------- Shorts app shell (inside phone screen) ---------- */
+
+.shorts-app {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  font-family: var(--font-app);
+  overflow: hidden;
+  --app-top-inset: 56px;
+  /* Framed shell: clearance for the drawn home indicator. */
+  --app-bottom-inset: 22px;
+  --app-nav-h: calc(49px + var(--app-bottom-inset));
+}
+
+/* ---------- Shorts chrome overlay ---------- */
+
+.shorts-chrome {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  color: #fff;
+  font-family: var(--font-app);
+}
+
+/* Only real controls take pointer events; the iframe keeps the center. */
+.shorts-chrome button,
+.shorts-chrome .shorts-nav {
+  pointer-events: auto;
+}
+
+.shorts-chrome button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.shorts-chrome svg {
+  display: block;
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.shorts-chrome-body {
+  position: absolute;
+  inset: 0 0 var(--app-nav-h) 0;
+}
+
+/* ---------- top bar ---------- */
+
+.shorts-chrome-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(var(--app-top-inset) + 4px) 14px 10px;
+  background: linear-gradient(180deg, rgb(0 0 0 / 55%), rgb(0 0 0 / 0%));
+}
+
+.shorts-wordmark {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 50%);
+}
+
+.shorts-chrome-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.shorts-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  filter: drop-shadow(0 1px 6px rgb(0 0 0 / 55%));
+}
+
+.shorts-icon-btn:active {
+  background: rgb(255 255 255 / 12%);
+}
+
+/* Mute sits above the feed so its taps never trigger the pause gesture. */
+.shorts-mute-btn {
+  position: absolute;
+  left: 12px;
+  bottom: calc(var(--app-player-guard) + 118px);
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 45%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 16%);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  filter: drop-shadow(0 1px 6px rgb(0 0 0 / 55%));
+  -webkit-tap-highlight-color: transparent;
+}
+
+.shorts-mute-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.shorts-mute-btn:active {
+  background: rgb(0 0 0 / 62%);
+}
+
+/* ---------- right action rail ---------- */
+
+.shorts-rail {
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--app-player-guard) + 14px);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.shorts-rail-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 64px;
+  padding: 8px 0 9px;
+  filter: drop-shadow(0 1px 5px rgb(0 0 0 / 60%));
+  transition: transform 0.14s ease;
+}
+
+.shorts-rail-btn svg {
+  width: 27px;
+  height: 27px;
+}
+
+.shorts-rail-btn span {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.shorts-rail-btn:active {
+  transform: scale(0.92);
+}
+
+.shorts-rail-more svg {
+  width: 22px;
+  height: 22px;
+}
+
+.shorts-rail-btn[data-pressed] {
+  animation: shorts-pop 0.34s cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+
+@keyframes shorts-pop {
+  40% {
+    transform: scale(1.22);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.shorts-rail-disc {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  margin-top: 9px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: linear-gradient(140deg, rgb(255 122 77 / 85%), #101318 78%);
+  box-shadow:
+    0 0 0 1.6px rgb(255 255 255 / 90%),
+    0 4px 14px rgb(0 0 0 / 60%);
+}
+
+.shorts-rail-disc img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shorts-rail-disc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    60% 60% at 30% 26%,
+    rgb(255 255 255 / 35%),
+    transparent 62%
+  );
+}
+
+/* ---------- bottom-left metadata ---------- */
+
+.shorts-meta {
+  position: absolute;
+  left: 14px;
+  right: 70px;
+  bottom: calc(var(--app-player-guard) + 10px);
+  z-index: 2;
+  filter: drop-shadow(0 1px 6px rgb(0 0 0 / 65%));
+}
+
+.shorts-meta-channel {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 9px;
+}
+
+.shorts-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(140deg, #ff7a4d, #8f2410 78%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgb(255 255 255 / 92%);
+}
+
+.shorts-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shorts-handle {
+  max-width: 150px;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.shorts-subscribe {
+  margin-left: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.shorts-caption {
+  display: -webkit-box;
+  margin: 0 0 9px;
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.34;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 55%);
+}
+
+.shorts-sound {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+}
+
+.shorts-sound svg {
+  width: 15px;
+  height: 15px;
+  opacity: 0.95;
+}
+
+.shorts-sound-track {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 84%, transparent);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 3%,
+    #000 84%,
+    transparent
+  );
+}
+
+.shorts-sound-marquee {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgb(255 255 255 / 94%);
+  white-space: nowrap;
+  animation: shorts-marquee 16s linear 1.6s infinite;
+}
+
+@keyframes shorts-marquee {
+  0%,
+  8% {
+    transform: translateX(0);
+  }
+
+  92%,
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- bottom navigation ---------- */
+
+.comments-off-snackbar {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--app-nav-h) + var(--app-bottom-inset) + 12px);
+  z-index: 4;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 4px;
+  background: #212121;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 45%);
+  pointer-events: none;
+}
+
+.shorts-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: start;
+  height: var(--app-nav-h);
+  padding-bottom: var(--app-bottom-inset);
+  background: var(--yt-bg);
+  border-top: 1px solid rgb(255 255 255 / 6%);
+}
+
+.shorts-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 49px;
+  min-width: 0;
+  color: var(--yt-nav-inactive);
+}
+
+.shorts-tab span {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
+
+.shorts-tab[data-active] {
+  color: #fff;
+}
+
+.shorts-tab-create svg {
+  width: 26px;
+  height: 26px;
+}

@@ -1,0 +1,40 @@
+﻿# Dependencies
+node_modules/
+.next/
+out/
+dist/
+
+# Env / secrets
+.env
+.env*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Local agent / brainstorm companion
+.superpowers/
+.agents/
+skills-lock.json
+
+# Planning docs, design specs, and implementation notes (local only)
+docs/superpowers/
+
+# One-off scrape/probe scripts and scratch tooling
+scripts/
+
+# Screenshots, browser profiles, probe JSON (not product)
+artifacts/
+mocks/
+
+# Local-only pair review tool (not part of the public site)
+app/feed-review/
+public/feed-review-data.json
+
+# Build / tooling noise
+coverage/
+*.tsbuildinfo
+.vercel/
+npm-debug.log*
