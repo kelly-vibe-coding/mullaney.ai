@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const contentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://s.ytimg.com",
-  "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
+  "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://www.linkedin.com",
   "img-src 'self' data: https://i.ytimg.com https://*.ytimg.com",
   "style-src 'self' 'unsafe-inline'",
   "connect-src 'self' https://www.youtube.com",

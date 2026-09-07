@@ -1,0 +1,25 @@
+---
+title: "In-course assistant for Skilljar + Rise"
+description: "A floating in-course assistant trained on your own course data, right inside Rise courses in Skilljar."
+publishedAt: "2026-01-19"
+---
+
+Public AI and online search won’t help much when learners are training on internal workflows or unreleased features in an e-learning course.
+
+In B2B/internal training, the answers people need are usually behind a login or not public yet. So when someone gets stuck mid-course, “go Google it” isn't any help, and a public LLM won’t have your course context.
+
+This afternoon I built a floating in-course assistant in Claude Code so learners can chat directly with an LLM trained on your own course data to get context-aware answers right inside your Rise courses in Skilljar by Gainsight.
+
+<video controls playsInline preload="metadata" src="/blog/in-course-assistant.mp4">
+  Your browser does not support the video tag.
+</video>
+
+High-level configuration:
+
+- Select your LLM and enter your API key (Claude, GPT, Gemini).
+- Upload your course materials (lesson text, videos, transcripts, PDFs).
+- Set up the widget (title, theme, placement, behavior, guardrails).
+- Add a single JavaScript snippet to the header of your Skilljar theme.
+- Scope it to the right e-learning courses (course ID, tag, or URL pattern).
+
+Free and open-source: [kelly-vibe-coding/in-course-assistant](https://github.com/kelly-vibe-coding/in-course-assistant).

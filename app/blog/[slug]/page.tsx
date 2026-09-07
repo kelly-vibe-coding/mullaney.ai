@@ -3,7 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import remarkGfm from "remark-gfm";
 
+import { LinkedInEmbed } from "@/components/linkedin-embed";
 import { formatPublishedDate, getAllPosts, getPostBySlug } from "@/lib/posts";
+
+const mdxComponents = {
+  LinkedInEmbed,
+};
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -54,6 +59,7 @@ export default async function BlogPostPage({
         </header>
         <MDXRemote
           source={post.content}
+          components={mdxComponents}
           options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
         />
       </article>
