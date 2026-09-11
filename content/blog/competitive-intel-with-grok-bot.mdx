@@ -1,0 +1,123 @@
+---
+title: "Competitive intel with Grok Bot"
+description: "A cloud competitive intelligence agent that scrapes the web and LinkedIn, filters for material signals, and posts a daily Slack digest — in about 30 minutes."
+publishedAt: "2026-09-11"
+---
+
+Grok Bot is pretty awesome, guys.
+
+I tested it to see if I could spin up a competitive intelligence agent that scrapes public websites and LinkedIn, filters for material signals, and posts a daily digest to Slack. I also needed the agents running in the cloud so my laptop doesn’t need to be on.
+
+Took me about 30 minutes.
+
+It gives me the same excitement as OpenClaw but without all the headaches and troubleshooting. Highly recommend checking it out.
+
+Here’s a basic prompt if you want to build the same thing — copy it and paste it into Grok Bot:
+
+````text
+Build a cloud-scheduled competitive intelligence system in Grokbot for a Product team.
+
+## Goal
+Every weekday morning, automatically gather competitive signals about a defined watchlist, filter hard for material news only, dedupe so nothing posts twice, and post a short digest to a Slack channel — even if my laptop is off.
+
+## Inputs I will provide (or ask me for these first)
+- Home company name (for framing only; do NOT include home-company news in the competitor digest)
+- Competitor watchlist: [COMPETITOR_1], [COMPETITOR_2], [COMPETITOR_3], … (paid / material peers only — exclude freeware / open-source-only noise unless I say otherwise)
+- Slack destination channel name (and resolve its channel ID)
+- Preferred daily run time / timezone (default: weekdays 8:00 AM local)
+- Lookback window (default: 14 days)
+
+## Architecture (multi-agent — do not do gather + judge + post in one agent)
+1. Orchestrator agent
+   - Owns schedule, shared inbox, SQLite dedupe, Slack posting, and coordinating teammates
+2. One collector agent PER competitor
+   - ONLY gathers raw candidates
+   - NEVER classifies materiality
+   - NEVER posts to Slack
+3. One Signal Classifier / vetting agent
+   - ONLY classifies and formats keepers
+   - NEVER scrapes
+   - NEVER posts to Slack
+
+### Collector responsibilities (each competitor)
+For the lookback window, gather raw candidates from ALL of these (web search is first-class, not optional):
+- LinkedIn company page posts via Apify (prefer harvestapi/linkedin-company-posts, no cookies; use date filters)
+- LinkedIn key-people posts via Apify (prefer harvestapi/linkedin-profile-posts) — CEO/founder/CTO/notable PM, not only the company page
+- General web/news search (launches, funding, pricing, M&A, layoffs)
+- Product changelogs / blogs / app store / site pages as relevant
+- WARN notices for layoffs
+- EDGAR for material filings when the company (or parent) is public; otherwise treat as N/A privately — do NOT put empty WARN/EDGAR lines in the Slack post
+
+For each competitor, resolve and store:
+- Official LinkedIn company URL
+- 1–3 key people LinkedIn profile URLs
+
+Tag each candidate with: competitor, date, short raw summary, source_url, source_type
+(linkedin_company | linkedin_profile | web | warn | edgar | changelog | other).
+
+Write candidates to a shared inbox JSON path the orchestrator can read.
+
+### Classifier responsibilities (high bar)
+KEEP only:
+- Major product launch or category-changing feature
+- Pricing/packaging change that affects buyers
+- Whale / named enterprise logo win (not generic “we signed a customer”)
+- Funding, acquisition, sale, strategic partnership
+- Layoffs, org reset, C-level hire/exit
+- Rebrand, rename, positioning pivot
+
+DROP always:
+- Minor features, polish, bugfix, version-bump fluff
+- Webinars, events, hackathon sponsorships, giveaways, marketing CTAs
+- Generic hiring / culture posts
+- Recycled talk about old launches
+- Soft thought leadership with no business fact
+- Non-whale customer anecdotes
+- Duplicate amplifies of the same announcement
+
+Output:
+1) Kept bullets exactly: **Competitor — takeaway** · one sentence · [source](url)
+2) Counts: Material: N · Filtered out: M
+3) Short drop list (competitor + 1-line reason)
+Never invent signals. Never narrate empty sources (“no WARN found”) in the Slack digest.
+
+## Slack digest format
+Post to the chosen channel.
+
+Visual structure:
+- Large title with emoji: 📡 Daily competitive digest — YYYY-MM-DD
+- Bullets ONLY for material hits (no empty-source filler, no “Competitor X had nothing”)
+- Quiet footer: Material: N · Filtered out: M
+- If zero NEW material items after dedupe: skip the Slack post entirely (stay quiet)
+
+Prefer Slack Block Kit (header + sections + context footer) if available; if the connector is markdown-only, use a # header + italic footer.
+Note: posting via the Cursor Slack connector may show “sent via Cursor.” If I need a custom Slack bot identity instead, set that up as a separate path.
+
+## Deduplication (critical)
+Do NOT use Slack channel history as the dedupe source of truth.
+Use a durable SQLite DB on the agent computer, e.g.:
+- posted_signals(fingerprint UNIQUE, competitor, takeaway, source_url, posted_at, digest_date, slack_channel_id)
+- run_stats(digest_date, material_count, filtered_count, posted_count)
+Fingerprint = hash(canonical source_url + competitor + takeaway).
+Each run: gather → classify → drop fingerprints already in DB → post only net-new → write new rows.
+
+## Schedule
+Create a Grokbot routine on weekdays at the agreed time.
+Orchestrator kicks all collector agents → waits for handoffs → sends combined inbox to classifier → dedupes → posts if needed → writes SQLite → notifies me with the Slack link only when something posted.
+
+## Setup order
+1. Connect Slack and Apify
+2. Confirm watchlist + Slack channel
+3. Create 1 collector per competitor + 1 classifier with the responsibilities above
+4. Stand up SQLite dedupe store
+5. Dry-run once in chat
+6. Post a test digest to Slack
+7. Enable the weekday routine
+
+## Success criteria
+- End-to-end works with laptop off (cloud routine)
+- Multi-source collection including LinkedIn people + web, not company LinkedIn alone
+- High-bar filtering with Material/Filtered counts
+- No duplicate Slack posts across days
+- Succinct, source-linked bullets only
+````
