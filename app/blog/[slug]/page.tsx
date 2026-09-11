@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import remarkGfm from "remark-gfm";
 
+import { CopyablePre } from "@/components/copyable-pre";
 import { LinkedInEmbed } from "@/components/linkedin-embed";
 import { formatPublishedDate, getAllPosts, getPostBySlug } from "@/lib/posts";
 
 const mdxComponents = {
   LinkedInEmbed,
+  pre: CopyablePre,
 };
 
 export function generateStaticParams() {
